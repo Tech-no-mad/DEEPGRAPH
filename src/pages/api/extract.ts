@@ -38,7 +38,7 @@ Respond ONLY with a valid JSON object in this exact format, with no markdown for
 }
 Keep node IDs short (1-2 words). Ensure every source and target in links exists in the nodes list.`;
 
-    const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/meta/llama-3-8b-instruct`, {
+    const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/meta/llama-3.1-8b-instruct-fp8`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiToken}`,

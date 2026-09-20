@@ -17,7 +17,7 @@ Researchers, software architects, and legal teams waste hours trying to map out 
 This project was engineered specifically for the **Build It** track, adhering to the open-source, serverless, and zero-cost constraints:
 
 * **AWS Cedar (The AWS Open Source Requirement):** We implemented the `@cedar-policy/cedar-wasm` SDK. Before any AI extraction occurs, the API payload is evaluated locally against a zero-trust policy engine using AWS Cedar. This robust policy-as-code integration fulfills the AWS tooling requirement entirely on `localhost`.
-* **Cloudflare Workers AI:** Once authorized by Cedar, the request is passed to Cloudflare's cutting-edge **Llama-3-8B-Instruct** model via API to perform lightning-fast, zero-shot Named Entity Recognition (NER) and relationship mapping.
+* **Cloudflare Workers AI:** Once authorized by Cedar, the request is passed to Cloudflare's cutting-edge **Llama-3.1-8B-Instruct** model via API to perform lightning-fast, zero-shot Named Entity Recognition (NER) and relationship mapping.
 
 ## System Architecture
 
@@ -26,7 +26,7 @@ graph TD
     UI[User Interface] --> API[Astro Server API]
     API --> Auth{AWS Cedar Policy Engine}
     Auth -- "Unauthorized" --> Block[Request Dropped]
-    Auth -- "Authorized" --> LLM[Cloudflare Llama 3]
+    Auth -- "Authorized" --> LLM[Cloudflare Llama 3.1]
     LLM --> Parse[JSON Graph Parser]
     Parse --> Render[React Force Graph 2D]
 ```

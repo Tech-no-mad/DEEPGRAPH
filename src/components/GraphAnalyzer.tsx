@@ -96,7 +96,7 @@ export default function GraphAnalyzer() {
                </div>
                <div className="flex items-center text-orange-500 text-sm font-semibold">
                   <Zap className="h-4 w-4 mr-1" />
-                  Cloudflare Llama-3 AI
+                  Cloudflare Llama-3.1 AI
                </div>
             </div>
             <button
