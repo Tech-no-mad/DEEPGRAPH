@@ -15,6 +15,25 @@ Built for the **First Commit Hackathon 2026**.
 - **Zero-Trust Security:** Integrates AWS Cedar to authorize AI inference requests locally, ensuring strict access control before any data hits the LLM.
 - **Strict AI Determinism:** Enforces `temperature: 0.0` and a strict 3-word relationship limit to guarantee consistent, hallucination-free data extraction.
 
+## 🏗️ System Architecture
+
+```mermaid
+flowchart TD
+    User([User Input]) -->|Dense Text| UI[React Frontend]
+    UI -->|POST /api/extract| API[Astro API Backend]
+    
+    API --> Cedar{AWS Cedar WASM}
+    Cedar -- Unauthorized --> Blocked[Reject Request]
+    
+    Cedar -- Authorized --> AI[Cloudflare Workers AI]
+    AI -->|Llama 3.1 8B Instruct| Extraction[Strict JSON Extraction]
+    
+    Extraction --> Fallback{Validation & Fallback}
+    Fallback -->|Parsed| Render[D3 Physics Engine]
+    
+    Render --> Export([High-Res PNG Export])
+```
+
 ## 🛠️ Tech Stack
 
 - **Frontend:** Astro, React, Tailwind CSS
