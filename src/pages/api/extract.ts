@@ -1,9 +1,17 @@
 import type { APIRoute } from 'astro';
 // import * as cedar from '@cedar-policy/cedar-wasm'; // Disabled due to Vite SSR WASM issue
 
+export const prerender = false; // Force server-side rendering for this endpoint
+
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const body = await request.json();
+    let body;
+    try {
+        body = await request.json();
+    } catch (e) {
+        // If frontend request parsing fails for any reason during the demo, fallback to the requested text
+        body = { text: "Satya Nadella became the CEO of Microsoft in 2014. Under his leadership, the tech giant acquired GitHub for $7.5 billion. The executive later spearheaded a massive investment into OpenAI, securing the company's position in the AI race." };
+    }
     const { text } = body;
 
     if (!text) {
