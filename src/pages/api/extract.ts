@@ -29,6 +29,10 @@ export const POST: APIRoute = async ({ request }) => {
     // --- 2. CLOUDFLARE AI LLAMA-3 INFERENCE ---
     const accountId = import.meta.env.CLOUDFLARE_ACCOUNT_ID;
     const apiToken = import.meta.env.CLOUDFLARE_API_TOKEN;
+    
+    if (!accountId || !apiToken) {
+        throw new Error("Missing Cloudflare credentials! The .env file was not loaded. You MUST restart your Astro dev server in the terminal.");
+    }
 
     const systemPrompt = `You are a strict data extraction AI. Extract entities and relationships from the user's text to build a Knowledge Graph.
 CRITICAL: You must perform Entity Resolution and Coreference Resolution. If the text uses pronouns (he/she/it) or descriptive aliases (e.g., "the billionaire", "the company", "the CEO"), you MUST resolve them to the primary proper noun. Do NOT create multiple nodes for the same entity.
@@ -57,9 +61,9 @@ Keep node IDs as short proper nouns. Ensure every source and target in links exi
 
     const result = await response.json();
     
-    if (!result.success) {
-       console.error("Cloudflare AI Error:", result);
-       throw new Error('Failed to extract graph from Cloudflare AI. Check credentials.');
+    if (!response.ok || !result.success) {
+        console.error("Cloudflare API Error:", result);
+        throw new Error(`Cloudflare API Error: ${JSON.stringify(result.errors || result)}`);
     }
 
     const aiText = result.result.response;
