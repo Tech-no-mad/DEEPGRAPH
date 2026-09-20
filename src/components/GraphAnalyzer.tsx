@@ -11,12 +11,12 @@ export default function GraphAnalyzer() {
 
   useEffect(() => {
     if (fgRef.current && data) {
-      // 1. Massive repulsion so nodes are spread equally far apart
-      fgRef.current.d3Force('charge').strength(-2500); 
-      // 2. Minimum length of edges so relationship text NEVER touches the nodes
-      fgRef.current.d3Force('link').distance(350); 
+      // Balanced repulsion: keeps nodes separated but prevents them from flying off-screen
+      fgRef.current.d3Force('charge').strength(-800); 
+      // Balanced edge length: fits text without pushing nodes out of bounds
+      fgRef.current.d3Force('link').distance(180); 
       
-      // 3. Auto-position/Zoom nicely after the physics settle
+      // Auto-position/Zoom nicely after the physics settle
       setTimeout(() => {
          if (fgRef.current) fgRef.current.zoomToFit(800, 100);
       }, 500);
