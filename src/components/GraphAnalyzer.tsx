@@ -11,15 +11,15 @@ export default function GraphAnalyzer() {
 
   useEffect(() => {
     if (fgRef.current && data) {
-      // Balanced repulsion: keeps nodes separated but prevents them from flying off-screen
-      fgRef.current.d3Force('charge').strength(-800); 
-      // Balanced edge length: fits text without pushing nodes out of bounds
-      fgRef.current.d3Force('link').distance(180); 
+      // Massive repulsion to automatically untangle the hairball without manual dragging
+      fgRef.current.d3Force('charge').strength(-2500); 
+      // Reasonable edge length to keep it neat
+      fgRef.current.d3Force('link').distance(200); 
       
-      // Auto-position/Zoom nicely after the physics settle
+      // Give the physics 1 full second to push apart and settle, THEN auto-zoom camera to capture all nodes
       setTimeout(() => {
-         if (fgRef.current) fgRef.current.zoomToFit(800, 100);
-      }, 500);
+         if (fgRef.current) fgRef.current.zoomToFit(1000, 100);
+      }, 1000);
     }
   }, [data]);
 

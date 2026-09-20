@@ -43,13 +43,14 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const systemPrompt = `You are a strict data extraction AI. Extract entities and relationships from the user's text to build a Knowledge Graph.
-CRITICAL: You must perform Entity Resolution and Coreference Resolution. If the text uses pronouns (he/she/it) or descriptive aliases (e.g., "the billionaire", "the company", "the CEO"), you MUST resolve them to the primary proper noun. Do NOT create multiple nodes for the same entity.
-CRITICAL: Include important context (like amounts, dates, or key facts) directly inside the relationship "label". For example, instead of just "acquired", write "acquired for $7.5 billion".
+CRITICAL RULES:
+1. Entity Resolution: Normalize entity names perfectly to prevent duplicates (e.g., do not output both "Microsoft" and "Microsoft Corp"). Resolve all pronouns.
+2. Short Labels: Relationship labels MUST be extremely short. MAXIMUM 3 WORDS. Examples: "founded", "invested $10B", "acquired". NEVER write full sentences or paragraphs on the edges!
 
 Respond ONLY with a valid JSON object in this exact format, with no markdown formatting or other text:
 {
   "nodes": [{"id": "Exact Entity Name", "group": 1}, {"id": "Entity2", "group": 2}],
-  "links": [{"source": "Exact Entity Name", "target": "Entity2", "label": "Contextual Relationship (e.g., acquired for $1M)"}]
+  "links": [{"source": "Exact Entity Name", "target": "Entity2", "label": "MAX 3 WORDS"}]
 }
 Keep node IDs as short proper nouns. Ensure every source and target in links exists perfectly in the nodes list.`;
 
