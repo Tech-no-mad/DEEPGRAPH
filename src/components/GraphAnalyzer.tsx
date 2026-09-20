@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ForceGraph2D } from 'react-force-graph-2d';
+import ForceGraph2D from 'react-force-graph-2d';
 import { Network, Loader2, ShieldCheck, Zap } from 'lucide-react';
 
 export default function GraphAnalyzer() {
