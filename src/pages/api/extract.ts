@@ -44,11 +44,12 @@ export const POST: APIRoute = async ({ request }) => {
 
     const systemPrompt = `You are a strict data extraction AI. Extract entities and relationships from the user's text to build a Knowledge Graph.
 CRITICAL: You must perform Entity Resolution and Coreference Resolution. If the text uses pronouns (he/she/it) or descriptive aliases (e.g., "the billionaire", "the company", "the CEO"), you MUST resolve them to the primary proper noun. Do NOT create multiple nodes for the same entity.
+CRITICAL: Include important context (like amounts, dates, or key facts) directly inside the relationship "label". For example, instead of just "acquired", write "acquired for $7.5 billion".
 
 Respond ONLY with a valid JSON object in this exact format, with no markdown formatting or other text:
 {
   "nodes": [{"id": "Exact Entity Name", "group": 1}, {"id": "Entity2", "group": 2}],
-  "links": [{"source": "Exact Entity Name", "target": "Entity2", "label": "Relationship"}]
+  "links": [{"source": "Exact Entity Name", "target": "Entity2", "label": "Contextual Relationship (e.g., acquired for $1M)"}]
 }
 Keep node IDs as short proper nouns. Ensure every source and target in links exists perfectly in the nodes list.`;
 
@@ -100,9 +101,9 @@ Keep node IDs as short proper nouns. Ensure every source and target in links exi
                 { id: "OpenAI", group: 4 }
             ],
             links: [
-                { source: "Satya Nadella", target: "Microsoft", label: "CEO of" },
-                { source: "Microsoft", target: "GitHub", label: "acquired" },
-                { source: "Satya Nadella", target: "OpenAI", label: "invested in" }
+                { source: "Satya Nadella", target: "Microsoft", label: "became CEO in 2014" },
+                { source: "Microsoft", target: "GitHub", label: "acquired for $7.5 billion" },
+                { source: "Satya Nadella", target: "OpenAI", label: "spearheaded massive investment" }
             ]
         };
     }

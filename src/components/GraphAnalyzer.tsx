@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import { Network, Loader2, ShieldCheck, Zap } from 'lucide-react';
 
@@ -7,6 +7,18 @@ export default function GraphAnalyzer() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState('');
+  const fgRef = useRef<any>();
+
+  // Tune physics when data loads to prevent overlap
+  useEffect(() => {
+    if (fgRef.current && data) {
+      // Push nodes far apart
+      fgRef.current.d3Force('charge').strength(-1500);
+      // Make links long enough to fit long descriptive text
+      fgRef.current.d3Force('link').distance(250);
+      fgRef.current.d3ReheatSimulation();
+    }
+  }, [data]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,6 +104,7 @@ export default function GraphAnalyzer() {
            
            <div className="h-[500px] w-full mt-12 cursor-move">
               <ForceGraph2D
+                ref={fgRef}
                 graphData={data}
                 nodeRelSize={6}
                 linkColor={() => 'rgba(255,255,255,0.4)'}
