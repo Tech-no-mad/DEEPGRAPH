@@ -32,13 +32,27 @@ export default function GraphAnalyzer() {
     }
   }, [data]);
 
-  const downloadJson = () => {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'deepgraph-export.json';
-    a.click();
+  const downloadImage = () => {
+    const canvas = document.querySelector('canvas');
+    if (!canvas) return;
+    
+    // Create a temporary canvas to apply the dark slate background, otherwise the PNG will be transparent
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const ctx = tempCanvas.getContext('2d');
+    
+    if (ctx) {
+      ctx.fillStyle = '#0f172a'; // Match the bg-slate-900 UI background
+      ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+      ctx.drawImage(canvas, 0, 0);
+      
+      const url = tempCanvas.toDataURL('image/png', 1.0);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'deepgraph-export.png';
+      a.click();
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,11 +120,11 @@ export default function GraphAnalyzer() {
         <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-900 relative shadow-inner">
            <div className="absolute top-6 right-6 flex gap-3 z-20">
              <button
-               onClick={downloadJson}
+               onClick={downloadImage}
                className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-3 px-6 rounded-full shadow-xl transition-transform hover:scale-105 flex items-center"
              >
                <Download className="h-4 w-4 mr-2" />
-               Export JSON
+               Export Image
              </button>
              <button
                onClick={() => setData(null)}
