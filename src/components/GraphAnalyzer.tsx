@@ -100,6 +100,11 @@ export default function GraphAnalyzer() {
                 graphData={data}
                 nodeRelSize={8}
                 linkColor={() => 'rgba(255,255,255,0.4)'}
+                onNodeDragEnd={(node: any) => {
+                  // Permanently fix the node at its new dragged position
+                  node.fx = node.x;
+                  node.fy = node.y;
+                }}
                 nodeCanvasObject={(node: any, ctx, globalScale) => {
                   const label = node.id;
                   const fontSize = 16 / globalScale;
