@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
-import { Network, Loader2, ShieldCheck, Zap } from 'lucide-react';
+import { Network, Loader2 } from 'lucide-react';
 
 export default function GraphAnalyzer() {
   const [text, setText] = useState('');
@@ -9,14 +9,17 @@ export default function GraphAnalyzer() {
   const [error, setError] = useState('');
   const fgRef = useRef<any>();
 
-  // Tune physics when data loads to prevent overlap
   useEffect(() => {
     if (fgRef.current && data) {
-      // Push nodes far apart
-      fgRef.current.d3Force('charge').strength(-1500);
-      // Make links long enough to fit long descriptive text
-      fgRef.current.d3Force('link').distance(250);
-      fgRef.current.d3ReheatSimulation();
+      // 1. Massive repulsion so nodes are spread equally far apart
+      fgRef.current.d3Force('charge').strength(-2500); 
+      // 2. Minimum length of edges so relationship text NEVER touches the nodes
+      fgRef.current.d3Force('link').distance(350); 
+      
+      // 3. Auto-position/Zoom nicely after the physics settle
+      setTimeout(() => {
+         if (fgRef.current) fgRef.current.zoomToFit(800, 100);
+      }, 500);
     }
   }, [data]);
 
@@ -83,43 +86,36 @@ export default function GraphAnalyzer() {
         </form>
       ) : (
         <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-900 relative shadow-inner">
-           <div className="absolute top-0 left-0 right-0 bg-white border-b border-slate-200 p-3 flex justify-between items-center z-10">
-              <div className="flex gap-4">
-                 <div className="flex items-center text-emerald-600 text-sm font-semibold">
-                    <ShieldCheck className="h-4 w-4 mr-1" />
-                    AWS Cedar Authorized
-                 </div>
-                 <div className="flex items-center text-orange-500 text-sm font-semibold">
-                    <Zap className="h-4 w-4 mr-1" />
-                    Cloudflare Llama-3.1 AI
-                 </div>
-              </div>
-              <button
-                 onClick={() => setData(null)}
-                 className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium py-1.5 px-4 rounded-lg transition-colors"
-              >
-                 Start Over
-              </button>
-           </div>
+           {/* Beautiful, floating Start Over button without any of the old marketing headers */}
+           <button
+             onClick={() => setData(null)}
+             className="absolute top-6 right-6 bg-white hover:bg-slate-100 text-slate-900 text-sm font-bold py-3 px-8 rounded-full shadow-xl transition-transform hover:scale-105 z-20"
+           >
+             Start Over
+           </button>
            
-           <div className="h-[500px] w-full mt-12 cursor-move">
+           <div className="h-[600px] w-full cursor-move">
               <ForceGraph2D
                 ref={fgRef}
                 graphData={data}
-                nodeRelSize={6}
+                nodeRelSize={8}
                 linkColor={() => 'rgba(255,255,255,0.4)'}
                 nodeCanvasObject={(node: any, ctx, globalScale) => {
                   const label = node.id;
                   const fontSize = 16 / globalScale;
-                  ctx.font = `600 ${fontSize}px Inter, sans-serif`;
+                  ctx.font = `700 ${fontSize}px Inter, sans-serif`;
                   const textWidth = ctx.measureText(label).width;
-                  const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 1.2);
+                  const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 1.5);
                   
-                  ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                  ctx.fillStyle = 'rgba(255, 255, 255, 1)';
                   ctx.beginPath();
                   // @ts-ignore
-                  ctx.roundRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1], 6 / globalScale);
+                  ctx.roundRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1], 8 / globalScale);
                   ctx.fill();
+
+                  ctx.strokeStyle = '#cbd5e1';
+                  ctx.lineWidth = 2 / globalScale;
+                  ctx.stroke();
 
                   ctx.textAlign = 'center';
                   ctx.textBaseline = 'middle';
@@ -137,8 +133,7 @@ export default function GraphAnalyzer() {
                 }}
                 linkCanvasObjectMode={() => 'after'}
                 linkCanvasObject={(link: any, ctx, globalScale) => {
-                  const MAX_FONT_SIZE = 12 / globalScale;
-                  const LABEL_NODE_MARGIN = 6;
+                  const MAX_FONT_SIZE = 13 / globalScale;
                   const start = link.source;
                   const end = link.target;
                   if (typeof start !== 'object' || typeof end !== 'object') return;
@@ -153,20 +148,24 @@ export default function GraphAnalyzer() {
                   if (textAngle < -Math.PI / 2) textAngle = -(-Math.PI - textAngle);
 
                   const label = link.label;
-                  ctx.font = `500 ${MAX_FONT_SIZE}px Sans-Serif`;
+                  ctx.font = `600 ${MAX_FONT_SIZE}px Inter, sans-serif`;
                   const textWidth = ctx.measureText(label).width;
-                  const bckgDimensions = [textWidth, MAX_FONT_SIZE].map(n => n + MAX_FONT_SIZE * 0.4);
+                  const bckgDimensions = [textWidth, MAX_FONT_SIZE].map(n => n + MAX_FONT_SIZE * 0.8);
                   
                   ctx.save();
                   ctx.translate(textPos.x, textPos.y);
                   ctx.rotate(textAngle);
                   
-                  ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
-                  ctx.fillRect(- bckgDimensions[0] / 2, - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
+                  // Draw solid dark pill for relationship text so it never overlaps weirdly
+                  ctx.fillStyle = 'rgba(15, 23, 42, 1)';
+                  ctx.beginPath();
+                  // @ts-ignore
+                  ctx.roundRect(- bckgDimensions[0] / 2, - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1], 4 / globalScale);
+                  ctx.fill();
 
                   ctx.textAlign = 'center';
                   ctx.textBaseline = 'middle';
-                  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                  ctx.fillStyle = 'rgba(255, 255, 255, 1)';
                   ctx.fillText(label, 0, 0);
                   ctx.restore();
                 }}
