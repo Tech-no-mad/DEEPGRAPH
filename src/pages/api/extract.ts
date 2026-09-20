@@ -31,12 +31,14 @@ export const POST: APIRoute = async ({ request }) => {
     const apiToken = import.meta.env.CLOUDFLARE_API_TOKEN;
 
     const systemPrompt = `You are a strict data extraction AI. Extract entities and relationships from the user's text to build a Knowledge Graph.
+CRITICAL: You must perform Entity Resolution and Coreference Resolution. If the text uses pronouns (he/she/it) or descriptive aliases (e.g., "the billionaire", "the company", "the CEO"), you MUST resolve them to the primary proper noun. Do NOT create multiple nodes for the same entity.
+
 Respond ONLY with a valid JSON object in this exact format, with no markdown formatting or other text:
 {
-  "nodes": [{"id": "Entity1", "group": 1}, {"id": "Entity2", "group": 2}],
-  "links": [{"source": "Entity1", "target": "Entity2", "label": "Relationship"}]
+  "nodes": [{"id": "Exact Entity Name", "group": 1}, {"id": "Entity2", "group": 2}],
+  "links": [{"source": "Exact Entity Name", "target": "Entity2", "label": "Relationship"}]
 }
-Keep node IDs short (1-2 words). Ensure every source and target in links exists in the nodes list.`;
+Keep node IDs as short proper nouns. Ensure every source and target in links exists perfectly in the nodes list.`;
 
     const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/meta/llama-3.1-8b-instruct-fp8`, {
       method: 'POST',
