@@ -14,7 +14,7 @@
   "dependencies": {
     "@astrojs/node": "^11.1.6",
     "@astrojs/react": "^6.0.6",
-    "@astrojs/vercel": "^7.8.0",
+    "@astrojs/vercel": "latest",
     "@aws-sdk/client-bedrock-runtime": "^3.1136.0",
     "@cedar-policy/cedar-wasm": "^4.13.0",
     "@tailwindcss/vite": "^4.3.3",
