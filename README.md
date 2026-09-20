@@ -1,66 +1,45 @@
-<div align="center">
-  <h1>DeepGraph AI</h1>
-  <p><b>Zero-Trust Knowledge Graph Extraction</b></p>
-  <p>Built for the <b>First Commit Hackathon (Bharat Builds Tour)</b></p>
-</div>
+# DeepGraph AI
 
----
+**Zero-Trust Knowledge Graph Extraction in Milliseconds**
 
-## The Problem & Solution
+DeepGraph AI transforms dense, unstructured text (contracts, research papers, tech news) into interactive, highly readable Knowledge Graphs. Powered by Cloudflare's Llama 3.1 AI and secured locally by AWS Cedar Zero-Trust policies.
 
-Researchers, software architects, and legal teams waste hours trying to map out relationships in dense, unstructured text. 
+Built for the **First Commit Hackathon 2026**.
 
-**DeepGraph AI** solves this by instantly transforming complex paragraphs into interactive, visual Knowledge Graphs. Simply paste your text, and our system extracts the entities and relationships, rendering them in a dynamic physics-based 2D canvas.
+## 🚀 Key Features
 
-## Hackathon Alignment (Build It Track)
+- **Contextual Entity Resolution:** The AI automatically resolves pronouns and deduplicates entities to ensure a mathematically clean graph.
+- **Advanced D3 Physics Engine:** Custom auto-untangling physics, massive node repulsion, and smart auto-zooming ensure the graph is always perfectly readable and never overlaps.
+- **Drag & Lock Layouts:** Drag any node to permanently freeze it in place, allowing you to manually arrange the perfect presentation graph.
+- **One-Click PNG Export:** Instantly download a high-resolution, dark-mode image of your knowledge graph directly from the HTML5 Canvas.
+- **Zero-Trust Security:** Integrates AWS Cedar to authorize AI inference requests locally, ensuring strict access control before any data hits the LLM.
+- **Strict AI Determinism:** Enforces `temperature: 0.0` and a strict 3-word relationship limit to guarantee consistent, hallucination-free data extraction.
 
-This project was engineered specifically for the **Build It** track, adhering to the open-source, serverless, and zero-cost constraints:
+## 🛠️ Tech Stack
 
-* **AWS Cedar (The AWS Open Source Requirement):** We implemented the `@cedar-policy/cedar-wasm` SDK. Before any AI extraction occurs, the API payload is evaluated locally against a zero-trust policy engine using AWS Cedar. This robust policy-as-code integration fulfills the AWS tooling requirement entirely on `localhost`.
-* **Cloudflare Workers AI:** Once authorized by Cedar, the request is passed to Cloudflare's cutting-edge **Llama-3.1-8B-Instruct** model via API to perform lightning-fast, zero-shot Named Entity Recognition (NER) and relationship mapping.
+- **Frontend:** Astro, React, Tailwind CSS
+- **Graph Visualization:** react-force-graph-2d (HTML5 Canvas)
+- **AI Engine:** Cloudflare Workers AI (`@cf/meta/llama-3.1-8b-instruct-fp8`)
+- **Security:** AWS Cedar (`@cedar-policy/cedar-wasm`)
 
-## System Architecture
+## ⚙️ Running Locally
 
-```mermaid
-graph TD
-    UI[User Interface] --> API[Astro Server API]
-    API --> Auth{AWS Cedar Policy Engine}
-    Auth -- "Unauthorized" --> Block[Request Dropped]
-    Auth -- "Authorized" --> LLM[Cloudflare Llama 3.1]
-    LLM --> Parse[JSON Graph Parser]
-    Parse --> Render[React Force Graph 2D]
-```
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Create a `.env` file in the root directory:
+   ```env
+   CLOUDFLARE_ACCOUNT_ID=your_account_id
+   CLOUDFLARE_API_TOKEN=your_api_token
+   ```
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+5. Open `http://localhost:4321` in your browser.
 
-## Key Features
+## 🔒 AWS Cedar Implementation (Hackathon Track)
 
-* **Instant Extraction:** Drop in any complex text and get a mapped structural graph instantly.
-* **Zero-Trust Security:** API routes are guarded by strict AWS Cedar policy-as-code evaluations.
-* **Interactive Visualization:** Physics-based node dragging, zooming, and panning.
-* **Modern Stack:** Built on Astro, React, and Tailwind CSS for blistering fast performance.
-
-## Local Development
-
-### 1. Prerequisites
-- Node.js (v18+)
-- Cloudflare API Token (with access to Workers AI)
-
-### 2. Quickstart
-Clone the repository and move into the directory:
-```bash
-git clone https://github.com/Tech-no-mad/DEEPGRAPH.git
-cd DEEPGRAPH
-```
-
-Create a `.env` file in the root directory with your credentials:
-```env
-CLOUDFLARE_ACCOUNT_ID=your_account_id_here
-CLOUDFLARE_API_TOKEN=your_api_token_here
-```
-
-Install the dependencies and start the local development server:
-```bash
-npm install
-npm run dev
-```
-
-Visit `http://localhost:4321` in your browser to interact with the AI.
+This project qualifies for the AWS open-source track by implementing **AWS Cedar** via WebAssembly (`cedar-wasm`). Before any text is sent to the Cloudflare LLM, a local Cedar policy engine evaluates the request to guarantee the user has the `Action::"ExtractGraph"` permission under the Zero-Trust architecture.
