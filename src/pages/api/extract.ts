@@ -35,11 +35,11 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // --- 2. CLOUDFLARE AI LLAMA-3 INFERENCE ---
-    const accountId = import.meta.env.CLOUDFLARE_ACCOUNT_ID;
-    const apiToken = import.meta.env.CLOUDFLARE_API_TOKEN;
+    const accountId = import.meta.env.CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID;
+    const apiToken = import.meta.env.CLOUDFLARE_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN;
     
     if (!accountId || !apiToken) {
-        throw new Error("Missing Cloudflare credentials! The .env file was not loaded. You MUST restart your Astro dev server in the terminal.");
+        throw new Error("Missing Cloudflare credentials! Make sure you added them in the Vercel Dashboard and REDEPLOYED.");
     }
 
     const systemPrompt = `You are a strict data extraction AI. Extract entities and relationships from the user's text to build a Knowledge Graph.
