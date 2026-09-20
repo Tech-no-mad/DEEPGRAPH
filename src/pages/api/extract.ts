@@ -46,6 +46,7 @@ export const POST: APIRoute = async ({ request }) => {
 CRITICAL RULES:
 1. Entity Resolution: Normalize entity names perfectly to prevent duplicates (e.g., do not output both "Microsoft" and "Microsoft Corp"). Resolve all pronouns.
 2. Short Labels: Relationship labels MUST be extremely short. MAXIMUM 3 WORDS. Examples: "founded", "invested $10B", "acquired". NEVER write full sentences or paragraphs on the edges!
+3. No Orphans: EVERY node you extract MUST be connected to at least one link. DO NOT output floating or disconnected nodes.
 
 Respond ONLY with a valid JSON object in this exact format, with no markdown formatting or other text:
 {
@@ -54,6 +55,7 @@ Respond ONLY with a valid JSON object in this exact format, with no markdown for
 }
 Keep node IDs as short proper nouns. Ensure every source and target in links exists perfectly in the nodes list.`;
 
+    // Execute Cloudflare AI
     const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/@cf/meta/llama-3.1-8b-instruct-fp8`, {
       method: 'POST',
       headers: {
@@ -61,11 +63,12 @@ Keep node IDs as short proper nouns. Ensure every source and target in links exi
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        max_tokens: 1500,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: text }
-        ]
+        ],
+        max_tokens: 1500,
+        temperature: 0.0 // STRICT DETERMINISM
       })
     });
 

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
-import { Network, Loader2 } from 'lucide-react';
+import { Network, Loader2, Download } from 'lucide-react';
 
 export default function GraphAnalyzer() {
   const [text, setText] = useState('');
@@ -16,7 +16,7 @@ export default function GraphAnalyzer() {
       // Reasonable edge length to keep it neat
       fgRef.current.d3Force('link').distance(200); 
       
-      // Give the physics 1.5 seconds to push apart and settle, then FREEZE everything
+      // Give the physics 2.5 full seconds to push apart and settle (handles larger graphs), then FREEZE everything
       setTimeout(() => {
          if (fgRef.current) {
              fgRef.current.zoomToFit(1000, 100);
@@ -28,9 +28,18 @@ export default function GraphAnalyzer() {
                  node.fy = node.y;
              });
          }
-      }, 1500);
+      }, 2500);
     }
   }, [data]);
+
+  const downloadJson = () => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'deepgraph-export.json';
+    a.click();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,13 +104,21 @@ export default function GraphAnalyzer() {
         </form>
       ) : (
         <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-900 relative shadow-inner">
-           {/* Beautiful, floating Start Over button without any of the old marketing headers */}
-           <button
-             onClick={() => setData(null)}
-             className="absolute top-6 right-6 bg-white hover:bg-slate-100 text-slate-900 text-sm font-bold py-3 px-8 rounded-full shadow-xl transition-transform hover:scale-105 z-20"
-           >
-             Start Over
-           </button>
+           <div className="absolute top-6 right-6 flex gap-3 z-20">
+             <button
+               onClick={downloadJson}
+               className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-3 px-6 rounded-full shadow-xl transition-transform hover:scale-105 flex items-center"
+             >
+               <Download className="h-4 w-4 mr-2" />
+               Export JSON
+             </button>
+             <button
+               onClick={() => setData(null)}
+               className="bg-white hover:bg-slate-100 text-slate-900 text-sm font-bold py-3 px-8 rounded-full shadow-xl transition-transform hover:scale-105"
+             >
+               Start Over
+             </button>
+           </div>
            
            <div className="h-[600px] w-full cursor-move">
               <ForceGraph2D
