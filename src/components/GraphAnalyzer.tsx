@@ -16,10 +16,19 @@ export default function GraphAnalyzer() {
       // Reasonable edge length to keep it neat
       fgRef.current.d3Force('link').distance(200); 
       
-      // Give the physics 1 full second to push apart and settle, THEN auto-zoom camera to capture all nodes
+      // Give the physics 1.5 seconds to push apart and settle, then FREEZE everything
       setTimeout(() => {
-         if (fgRef.current) fgRef.current.zoomToFit(1000, 100);
-      }, 1000);
+         if (fgRef.current) {
+             fgRef.current.zoomToFit(1000, 100);
+             
+             // Pin every single node exactly where it settled
+             const currentGraph = fgRef.current.graphData();
+             currentGraph.nodes.forEach((node: any) => {
+                 node.fx = node.x;
+                 node.fy = node.y;
+             });
+         }
+      }, 1500);
     }
   }, [data]);
 
