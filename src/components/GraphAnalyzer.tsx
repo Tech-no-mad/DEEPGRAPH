@@ -35,7 +35,13 @@ export default function GraphAnalyzer() {
         body: JSON.stringify({ text })
       });
       
-      const data = await response.json();
+      const rawText = await response.text();
+      let data;
+      try {
+         data = JSON.parse(rawText);
+      } catch (e) {
+         throw new Error(`Server crashed or returned invalid JSON. Raw response: ${rawText.substring(0, 60)}...`);
+      }
       
       if (!response.ok) {
         throw new Error(data.error || 'Failed to extract graph');
