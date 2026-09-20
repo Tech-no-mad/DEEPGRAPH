@@ -1,33 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import { Network, Loader2, ShieldCheck, Zap } from 'lucide-react';
 
 export default function GraphAnalyzer() {
   const [text, setText] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [graphData, setGraphData] = useState<{ nodes: any[], links: any[] } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<any>(null);
   const [error, setError] = useState('');
-  
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 800, height: 400 });
 
-  useEffect(() => {
-    if (containerRef.current) {
-      setDimensions({
-        width: containerRef.current.offsetWidth,
-        height: 500
-      });
-    }
-  }, [graphData]);
-
-  const handleAnalyze = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!text.trim()) return;
-
-    setIsAnalyzing(true);
+    setLoading(true);
     setError('');
-    setGraphData(null);
-
+    
     try {
       const response = await fetch('/api/extract', {
         method: 'POST',
@@ -36,117 +21,151 @@ export default function GraphAnalyzer() {
       });
       
       const rawText = await response.text();
-      let data;
+      let parsedData;
       try {
-         data = JSON.parse(rawText);
+         parsedData = JSON.parse(rawText);
       } catch (e) {
          throw new Error(`Server crashed or returned invalid JSON. Raw response: ${rawText.substring(0, 60)}...`);
       }
       
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to extract graph');
+        throw new Error(parsedData.error || 'Failed to extract graph');
       }
-      
-      setGraphData(data.graph);
+
+      setData(parsedData.graph);
     } catch (err: any) {
       setError(err.message);
     } finally {
-      setIsAnalyzing(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="w-full">
-      {!graphData && (
-        <form onSubmit={handleAnalyze} className="space-y-4">
+    <div>
+      {!data ? (
+        <form onSubmit={handleSubmit} className="mb-6">
           <textarea
+            className="w-full h-48 p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none"
+            placeholder="Paste your dense text, architecture docs, or research paragraphs here..."
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Paste a complex paragraph, news article, or research abstract here... Let the AI extract the entities and relationships."
-            className="w-full min-h-[200px] p-4 text-slate-800 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none resize-y shadow-sm font-medium"
             required
           />
           <button
             type="submit"
-            disabled={isAnalyzing || !text.trim()}
-            className="w-full bg-slate-900 hover:bg-black text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-md"
+            disabled={loading || !text}
+            className="mt-4 w-full bg-slate-900 text-white font-semibold py-4 px-6 rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-all flex items-center justify-center"
           >
-            {isAnalyzing ? (
+            {loading ? (
               <>
-                <Loader2 className="animate-spin mr-2 h-5 w-5" />
-                AWS Cedar Authorizing & Cloudflare AI Extracting...
+                <Loader2 className="h-5 w-5 animate-spin mr-3" />
+                Extracting entities & generating graph...
               </>
             ) : (
               <>
-                <Network className="mr-2 h-5 w-5" />
+                <Network className="h-5 w-5 mr-3" />
                 Generate Knowledge Graph
               </>
             )}
           </button>
         </form>
-      )}
-
-      {error && (
-        <div className="mt-4 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
-          <strong>Error:</strong> {error}
-        </div>
-      )}
-
-      {graphData && (
-        <div className="mt-6 border border-slate-200 rounded-2xl overflow-hidden bg-slate-50 shadow-inner">
-          <div className="p-4 bg-white border-b border-slate-200 flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-               <div className="flex items-center text-green-600 text-sm font-semibold">
-                  <ShieldCheck className="h-4 w-4 mr-1" />
-                  AWS Cedar Authorized
-               </div>
-               <div className="flex items-center text-orange-500 text-sm font-semibold">
-                  <Zap className="h-4 w-4 mr-1" />
-                  Cloudflare Llama-3.1 AI
-               </div>
-            </div>
-            <button
-              onClick={() => setGraphData(null)}
-              className="text-sm font-bold text-slate-500 hover:text-slate-900 px-3 py-1 bg-slate-100 rounded-md"
-            >
-              Start Over
-            </button>
-          </div>
-          
-          <div ref={containerRef} className="w-full bg-slate-900">
-            {typeof window !== 'undefined' && (
+      ) : (
+        <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-900 relative shadow-inner">
+           <div className="absolute top-0 left-0 right-0 bg-white border-b border-slate-200 p-3 flex justify-between items-center z-10">
+              <div className="flex gap-4">
+                 <div className="flex items-center text-emerald-600 text-sm font-semibold">
+                    <ShieldCheck className="h-4 w-4 mr-1" />
+                    AWS Cedar Authorized
+                 </div>
+                 <div className="flex items-center text-orange-500 text-sm font-semibold">
+                    <Zap className="h-4 w-4 mr-1" />
+                    Cloudflare Llama-3.1 AI
+                 </div>
+              </div>
+              <button
+                 onClick={() => setData(null)}
+                 className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium py-1.5 px-4 rounded-lg transition-colors"
+              >
+                 Start Over
+              </button>
+           </div>
+           
+           <div className="h-[500px] w-full mt-12 cursor-move">
               <ForceGraph2D
-                width={dimensions.width}
-                height={dimensions.height}
-                graphData={graphData}
-                nodeAutoColorBy="group"
-                nodeRelSize={8}
-                linkColor={() => 'rgba(255,255,255,0.2)'}
+                graphData={data}
+                nodeRelSize={6}
+                linkColor={() => 'rgba(255,255,255,0.4)'}
                 nodeCanvasObject={(node: any, ctx, globalScale) => {
                   const label = node.id;
-                  const fontSize = 12/globalScale;
-                  ctx.font = `${fontSize}px Sans-Serif`;
+                  const fontSize = 16 / globalScale;
+                  ctx.font = `600 ${fontSize}px Inter, sans-serif`;
                   const textWidth = ctx.measureText(label).width;
-                  const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); 
-
-                  ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-                  ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
+                  const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 1.2);
+                  
+                  ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                  ctx.beginPath();
+                  // @ts-ignore
+                  ctx.roundRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1], 6 / globalScale);
+                  ctx.fill();
 
                   ctx.textAlign = 'center';
                   ctx.textBaseline = 'middle';
-                  ctx.fillStyle = node.color || '#fff';
-                  ctx.fillText(label, node.x, node.y);
-
+                  ctx.fillStyle = '#0f172a';
+                  ctx.fillText(label, node.x as number, node.y as number);
+                  
                   node.__bckgDimensions = bckgDimensions;
                 }}
                 nodePointerAreaPaint={(node: any, color, ctx) => {
                   ctx.fillStyle = color;
                   const bckgDimensions = node.__bckgDimensions;
-                  bckgDimensions && ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
+                  if (bckgDimensions) {
+                    ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
+                  }
+                }}
+                linkCanvasObjectMode={() => 'after'}
+                linkCanvasObject={(link: any, ctx, globalScale) => {
+                  const MAX_FONT_SIZE = 12 / globalScale;
+                  const LABEL_NODE_MARGIN = 6;
+                  const start = link.source;
+                  const end = link.target;
+                  if (typeof start !== 'object' || typeof end !== 'object') return;
+
+                  const textPos = Object.assign(...['x', 'y'].map(c => ({
+                    [c]: start[c] + (end[c] - start[c]) / 2
+                  })));
+
+                  const relLink = { x: end.x - start.x, y: end.y - start.y };
+                  let textAngle = Math.atan2(relLink.y, relLink.x);
+                  if (textAngle > Math.PI / 2) textAngle = -(Math.PI - textAngle);
+                  if (textAngle < -Math.PI / 2) textAngle = -(-Math.PI - textAngle);
+
+                  const label = link.label;
+                  ctx.font = `500 ${MAX_FONT_SIZE}px Sans-Serif`;
+                  const textWidth = ctx.measureText(label).width;
+                  const bckgDimensions = [textWidth, MAX_FONT_SIZE].map(n => n + MAX_FONT_SIZE * 0.4);
+                  
+                  ctx.save();
+                  ctx.translate(textPos.x, textPos.y);
+                  ctx.rotate(textAngle);
+                  
+                  ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+                  ctx.fillRect(- bckgDimensions[0] / 2, - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
+
+                  ctx.textAlign = 'center';
+                  ctx.textBaseline = 'middle';
+                  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                  ctx.fillText(label, 0, 0);
+                  ctx.restore();
                 }}
               />
-            )}
-          </div>
+           </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="mt-4 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200">
+          <p className="font-semibold text-sm">Error generating graph:</p>
+          <p className="text-sm mt-1">{error}</p>
         </div>
       )}
     </div>
