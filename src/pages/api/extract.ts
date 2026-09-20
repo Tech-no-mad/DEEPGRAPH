@@ -47,6 +47,7 @@ Keep node IDs as short proper nouns. Ensure every source and target in links exi
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
+        max_tokens: 1500,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: text }
@@ -63,13 +64,14 @@ Keep node IDs as short proper nouns. Ensure every source and target in links exi
 
     const aiText = result.result.response;
     
-    // Clean up the JSON (sometimes LLMs add markdown blocks)
+    // Clean up the JSON by extracting everything between the first { and last }
     let jsonStr = aiText;
-    const match = aiText.match(/```json\n([\s\S]*?)\n```/);
-    if (match) {
-        jsonStr = match[1];
+    const startIndex = aiText.indexOf('{');
+    const endIndex = aiText.lastIndexOf('}');
+    if (startIndex !== -1 && endIndex !== -1) {
+        jsonStr = aiText.substring(startIndex, endIndex + 1);
     } else {
-        jsonStr = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
+        throw new Error("AI did not return a valid JSON object. Please try again.");
     }
     
     const graphData = JSON.parse(jsonStr);
